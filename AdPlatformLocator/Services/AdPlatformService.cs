@@ -1,5 +1,4 @@
-﻿using AdPlatformLocator.Models;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace AdPlatformLocator.Services
 {
@@ -55,8 +54,11 @@ namespace AdPlatformLocator.Services
         /// <returns>
         /// Список рекламных площадок по локации
         /// </returns>
-        public HashSet<string> SearchAdPlatforms(string location)
+        public HashSet<string> SearchAdPlatforms(string? location)
         {
+            if (string.IsNullOrWhiteSpace(location))
+                return new HashSet<string>();
+
             var foundAdPlacements = new HashSet<string>();
             var parentLocations = GetParentLocations(location);
 
@@ -86,8 +88,11 @@ namespace AdPlatformLocator.Services
         /// Список всех родительских локаций
         /// Например, для "/ru/svrd/revda" это будут "/ru/svrd/revda", "/ru/svrd", "/ru".
         /// </returns>
-        private static List<string> GetParentLocations(string location)
+        public static List<string> GetParentLocations(string? location)
         {
+            if (string.IsNullOrWhiteSpace(location))
+                return new List<string>();
+
             var parents = new List<string>();
             var currentPath = location;
 
