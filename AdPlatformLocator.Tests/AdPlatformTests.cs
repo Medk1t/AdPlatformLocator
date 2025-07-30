@@ -1,8 +1,8 @@
-﻿using AdPlatformLocator.Services; // Подключаем тестируемый сервис
-using Xunit; // Подключаем XUnit
-using System.Linq; // Для работы с LINQ
+﻿using AdPlatformLocator.Services;
+using Xunit;
+using System.Linq;
 using System.Collections.Generic;
-using AdPlatformLocator.Services; // Для использования List
+using System.Threading.Tasks;
 
 public class AdPlatformServiceTests
 {

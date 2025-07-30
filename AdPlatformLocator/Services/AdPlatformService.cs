@@ -16,8 +16,7 @@ namespace AdPlatformLocator.Services
         /// <returns>Число обработанных строк и число загрузженых локаций</returns>
         public (int LinesCount, int LocationsCount) LoadData(string adPlatformsTextData)
         {
-            // Очищаем старые данные перед загрузкой новых, так как загрузка должна полностью перезаписывать информацию.
-            _locationAdvertisers.Clear();
+            var newMap = new ConcurrentDictionary<string, HashSet<string>>();
 
             // Разделяем содержимое файла на строки
             var lines = adPlatformsTextData.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
@@ -41,10 +40,13 @@ namespace AdPlatformLocator.Services
                 {
                     // Добавляем рекламную площадку в HashSet для каждой локации.
                     // Если локации еще нет в словаре, создаем новый HashSet.
-                    _locationAdvertisers.GetOrAdd(location, new HashSet<string>()).Add(adPlacementName);
+                    newMap.GetOrAdd(location, new HashSet<string>()).Add(adPlacementName);
                 }
             }
-            return (lines.Count(), _locationAdvertisers.Count);
+
+            //При успешной загрузке заменяем ссылку старого списка на новый
+            Interlocked.Exchange(ref  _locationAdvertisers, newMap);
+            return (lines.Count(), newMap.Count);
         }
 
         /// <summary>
