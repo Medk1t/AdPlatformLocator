@@ -1,4 +1,6 @@
 ﻿using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace AdPlatformLocator.Services
 {
@@ -44,8 +46,27 @@ namespace AdPlatformLocator.Services
                 }
             }
 
+            foreach (var item in newMap)
+            {
+                var foundAdPlacements = new HashSet<string>();
+                var pLoc = GetParentLocations(item.Key);
+                foreach (var loc in pLoc)
+                {
+                    if (newMap.TryGetValue(loc, out var adPlacements))
+                    {
+
+                        foreach (var adPlacement in adPlacements)
+                        {
+                            foundAdPlacements.Add(adPlacement);
+                        }
+
+                    }
+                }
+                newMap[item.Key] = foundAdPlacements;
+            }
             //При успешной загрузке заменяем ссылку старого списка на новый
-            Interlocked.Exchange(ref  _locationAdvertisers, newMap);
+            Interlocked.Exchange(ref _locationAdvertisers, newMap);
+
             return (lines.Count(), newMap.Count);
         }
 
@@ -61,22 +82,10 @@ namespace AdPlatformLocator.Services
             if (string.IsNullOrWhiteSpace(location))
                 return new HashSet<string>();
 
-            var foundAdPlacements = new HashSet<string>();
-            var parentLocations = GetParentLocations(location);
+            if (_locationAdvertisers.TryGetValue(location, out var adPlacements))
+                return adPlacements;
 
-            foreach (var loc in parentLocations)
-            {
-                // Пытаемся получить список рекламных площадок для каждой родительской локации
-                if (_locationAdvertisers.TryGetValue(loc, out var adPlacements))
-                {
-                    foreach (var adPlacement in adPlacements)
-                    {
-                        foundAdPlacements.Add(adPlacement);
-                    }
-                }
-            }
-
-            return foundAdPlacements;
+            return new HashSet<string>();
         }
 
         /// <summary>
